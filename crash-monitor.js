@@ -1,18 +1,37 @@
-const target = document.querySelector("#crash");
-
-const observerConfig = {
-	attributes: true
-}
-
 const observer = new MutationObserver(callback);
-observer.observe(target, observerConfig);
+observer.observe(document.querySelector("#crash"), { attributes: true });
 
-window.lose = false;
+const sumBetNode = document.querySelector(".left-bets thead th:nth-child(2)");
+const sumProfitNode = document.querySelector(".left-bets thead th:last-child");
+const spanBet = document.createElement("span");
+const spanProfit = document.createElement("span");
+spanBet.id = "spanBet";
+spanProfit.id = "spanProfit";
+spanBet.innerText = 0;
+spanProfit.innerText = 0;
+
+const betFragment = document.createDocumentFragment();
+const profitFragment = document.createDocumentFragment();
+betFragment.append(
+	spanBet,
+	document.createElement("br")
+);
+
+profitFragment.append(
+	spanProfit,
+	document.createElement("br")
+);
+
+sumBetNode.insertBefore(betFragment, sumBetNode.firstChild);
+sumProfitNode.insertBefore(profitFragment, sumProfitNode.firstChild);
+
+window.losed = false;
+window.roundStarted = false;
 window.games = [];
 
-function callback(mutationList, observer) {
+function callback(mutationList) {
 	mutationList.forEach(mutation => {
-		if (mutation.target.classList.contains("lose") && !window.lose) {
+		if (mutation.target.classList.contains("lose") && !window.losed) {
 			const betsList = [...document.querySelector("#bets-list").childNodes];
 			const game = {
 					sumBet: 0,
@@ -45,11 +64,43 @@ function callback(mutationList, observer) {
 
 			window.games.push(game);
 			window.losed = true;
-			window.lose = true;
 			console.log(`Crash: ${game.crashX} | Sum bet: ${game.sumBet} | Sum profit: ${game.sumProfit}`);
 		}
 
+		if (mutation.target.classList.contains("round") && !window.roundStarted) {
+			const betsList = document.querySelector("#bets-list");
+
+			[...betsList.children].forEach(node => {
+				spanBet.innerText = +spanBet.innerText + (+node.getAttribute("data-amount"));
+			});
+
+			const observer = new MutationObserver(mutationList => {
+				mutationList.forEach(mutation => {
+					let profit = +mutation.target.querySelector(".profit .symbol")
+								.innerText.replace(",", "");
+
+					if (mutation.target.querySelector(".profit .text-nowrap").innerText[0] === "-")
+						profit = -profit;
+
+					spanProfit.innerText = +spanProfit.innerText + profit;
+				});
+			});
+
+			[...betsList.querySelectorAll(".profit")].forEach(elem => {
+				observer.observe(elem, {childList: true});
+			});
+			
+			window.roundStarted = true;
+		}
+
 		if (!mutation.target.classList.contains("lose"))
-			window.lose = false
+			window.losed = false;
+
+		if (!mutation.target.classList.contains("round")) {
+			window.roundStarted = false;
+			spanBet.innerText = 0;
+			spanProfit.innerText = 0;
+		}
+
 	});
 }
