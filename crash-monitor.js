@@ -3,22 +3,22 @@ observer.observe(document.querySelector("#crash"), { attributes: true });
 
 const sumBetNode = document.querySelector(".left-bets thead th:nth-child(2)");
 const sumProfitNode = document.querySelector(".left-bets thead th:last-child");
-const spanBet = document.createElement("span");
-const spanProfit = document.createElement("span");
-spanBet.id = "spanBet";
-spanProfit.id = "spanProfit";
-spanBet.innerText = 0;
-spanProfit.innerText = 0;
+const sumBet = document.createElement("span");
+const sumProfit = document.createElement("span");
+sumBet.id = "sumBet";
+sumProfit.id = "sumProfit";
+sumBet.innerText = 0;
+sumProfit.innerText = 0;
 
 const betFragment = document.createDocumentFragment();
 const profitFragment = document.createDocumentFragment();
 betFragment.append(
-	spanBet,
+	sumBet,
 	document.createElement("br")
 );
 
 profitFragment.append(
-	spanProfit,
+	sumProfit,
 	document.createElement("br")
 );
 
@@ -71,7 +71,7 @@ function callback(mutationList) {
 			const betsList = document.querySelector("#bets-list");
 
 			[...betsList.children].forEach(node => {
-				spanBet.innerText = +spanBet.innerText + (+node.getAttribute("data-amount"));
+				sumBet.innerText = +sumBet.innerText + (+node.getAttribute("data-amount"));
 			});
 
 			const observer = new MutationObserver(mutationList => {
@@ -82,7 +82,7 @@ function callback(mutationList) {
 					if (mutation.target.querySelector(".profit .text-nowrap").innerText[0] === "-")
 						profit = -profit;
 
-					spanProfit.innerText = +spanProfit.innerText + profit;
+					sumProfit.innerText = +sumProfit.innerText + profit;
 				});
 			});
 
@@ -98,8 +98,8 @@ function callback(mutationList) {
 
 		if (!mutation.target.classList.contains("round")) {
 			window.roundStarted = false;
-			spanBet.innerText = 0;
-			spanProfit.innerText = 0;
+			sumBet.innerText = 0;
+			sumProfit.innerText = 0;
 		}
 
 	});
